@@ -17,6 +17,7 @@ src/minecraft/*
 
 *.sh
 *.bat
+!build.sh
 
 CHANGELOG
 LICENSE.txt
