@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.Configuration;
 import buildcraft.BuildCraftCore;
 import buildcraft.BuildCraftFactory;
+import buildcraft.api.gates.ActionManager;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
@@ -19,7 +20,7 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 
-@Mod(modid = "henje_AdvancedCrafting", name="AdvancedCrafting", version="0.3")
+@Mod(modid = "henje_AdvancedCrafting", name="AdvancedCrafting", version="0.4")
 @NetworkMod(clientSideRequired=true)
 public class AdvancedCrafting {
 	
@@ -51,6 +52,7 @@ public class AdvancedCrafting {
 	
 	@Mod.PostInit
 	public void postLoad(FMLPostInitializationEvent event) {
+		ActionManager.registerActionProvider(new ActionProvider());
 		config.save();
 	}
 }

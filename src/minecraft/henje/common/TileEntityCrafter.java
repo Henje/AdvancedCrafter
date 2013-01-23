@@ -17,10 +17,12 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
+import buildcraft.api.gates.IAction;
+import buildcraft.api.gates.IActionReceptor;
 import buildcraft.api.transport.IPipeEntry;
 
-public class TileEntityCrafter extends TileEntity implements IInventory {
-	private final static int CRAFT_DELAY = 60;
+public class TileEntityCrafter extends TileEntity implements IInventory, IActionReceptor {
+	private final static int CRAFT_DELAY = 20;
 	private int counter;
 	private ItemStack[] inventory;
 	private boolean activated = true;
@@ -234,7 +236,6 @@ public class TileEntityCrafter extends TileEntity implements IInventory {
 
 			@Override
 			public boolean canInteractWith(EntityPlayer var1) {
-				// TODO Auto-generated method stub
 				return false;
 			}
 			
@@ -326,5 +327,14 @@ public class TileEntityCrafter extends TileEntity implements IInventory {
 	
 	public void setActivated(boolean b) {
 		activated = b;
+	}
+
+	@Override
+	public void actionActivated(IAction action) {
+		if(action.getId() == 1010) {
+			setActivated(false);
+		} else if(action.getId() == 1011) {
+			setActivated(true);
+		}
 	}
 }

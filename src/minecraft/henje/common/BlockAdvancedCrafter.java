@@ -111,9 +111,9 @@ public class BlockAdvancedCrafter extends BlockContainer {
 	public void updateTick(World world, int x, int y, int z, Random random) {
 			TileEntityCrafter crafter = (TileEntityCrafter) world.getBlockTileEntity(x, y, z);
 		if(world.isBlockIndirectlyGettingPowered(x, y, z)) {
-			crafter.setActivated(false);
+			//crafter.setActivated(false);
 		} else {
-			crafter.setActivated(true);
+			//crafter.setActivated(true);
 		}
 	}
 }
