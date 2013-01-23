@@ -9,8 +9,9 @@ unzip mcp726a.zip
 wget http://files.minecraftforge.net/minecraftforge/minecraftforge-src-latest.zip
 unzip minecraftforge-src-latest.zip
 chmod +x .
+python runtime/cleanup.py -f
 cd forge
-echo -e yes\n | python install.py
+python install.py
 cd ..
 python runtime/recompile.py
 python runtime/reobfuscate.py
@@ -19,4 +20,4 @@ cd reobf/minecraft
 zip AdvancedCrafter.zip texture henje
 mv AdvancedCrafter.zip ../../../AdvancedCrafter_$VERSION.zip
 cd ../../../
-rm -r build
+rm -r -f build
