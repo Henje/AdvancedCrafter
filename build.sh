@@ -10,6 +10,8 @@ wget http://files.minecraftforge.net/minecraftforge/minecraftforge-src-latest.zi
 unzip minecraftforge-src-latest.zip
 chmod +x .
 python runtime/cleanup.py -f
+rm -r conf
+cp -r forge/conf conf
 cd forge
 python install.py
 cd ..
