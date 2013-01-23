@@ -4,7 +4,7 @@ unzip mcp726a.zip
 wget http://files.minecraftforge.net/minecraftforge/minecraftforge-src-latest.zip
 unzip `ls | find minecraftforge*`
 cd forge
-chmod +x install.sh
+chmod +x .
 ./install.sh
 cd ..
 ./recompile.sh
