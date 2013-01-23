@@ -3,8 +3,8 @@ wget http://mcp.ocean-labs.de/files/mcp726a.zip
 unzip mcp726a.zip
 wget http://files.minecraftforge.net/minecraftforge/minecraftforge-src-latest.zip
 unzip `ls | find minecraftforge*`
-cd forge
 chmod +x .
+cd forge
 ./install.sh
 cd ..
 ./recompile.sh
