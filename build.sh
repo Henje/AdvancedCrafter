@@ -10,7 +10,7 @@ wget http://files.minecraftforge.net/minecraftforge/minecraftforge-src-latest.zi
 unzip minecraftforge-src-latest.zip
 chmod +x .
 cd forge
-python install.py
+echo -e yes\n | python install.py
 cd ..
 python runtime/recompile.py
 python runtime/reobfuscate.py
