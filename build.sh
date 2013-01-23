@@ -10,10 +10,10 @@ wget http://files.minecraftforge.net/minecraftforge/minecraftforge-src-latest.zi
 unzip minecraftforge-src-latest.zip
 chmod +x .
 cd forge
-./install.sh
+python install.py
 cd ..
-./recompile.sh
-./reobfuscate.sh
+python runtime/recompile.py
+python runtime/reobfuscate.py
 mv texture reobf/minecraft/texture
 cd reobf/minecraft
 zip AdvancedCrafter.zip texture henje
