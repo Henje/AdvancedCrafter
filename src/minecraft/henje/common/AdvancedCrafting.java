@@ -20,7 +20,7 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 
-@Mod(modid = "henje_AdvancedCrafting", name="AdvancedCrafting", version="0.4")
+@Mod(modid = "henje_AdvancedCrafting", name="AdvancedCrafting", version="0.4.1")
 @NetworkMod(clientSideRequired=true)
 public class AdvancedCrafting {
 	
