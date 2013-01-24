@@ -132,4 +132,8 @@ public class ContainerCrafter extends Container {
 			return false;
 		}
 	}
+	
+	public TileEntityCrafter getCrafter() {
+		return tileEntity;
+	}
 }

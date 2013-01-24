@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
+import cpw.mods.fml.common.network.PacketDispatcher;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -14,6 +16,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.INetworkManager;
+import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
@@ -26,10 +30,11 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 	private final static int CRAFT_DELAY = 20;
 	private int counter;
 	private ItemStack[] inventory;
-	private boolean activated = true;
+	private boolean activated;
 
 	public TileEntityCrafter() {
 		inventory = new ItemStack[9];
+		activated = true;
 	}
 	
 	public ItemStack craftItem() {
@@ -222,8 +227,7 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 				inventory[slot] = ItemStack.loadItemStackFromNBT(tag);
 			}
 		}
-		NBTTagCompound flags = tagCompound.getCompoundTag("flags");
-		activated = flags.getBoolean("activated");
+		readFlagsFromNBT(tagCompound.getCompoundTag("flags"));
 	}
 
 	@Override
@@ -240,10 +244,18 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 				itemList.appendTag(tag);
 			}
 		}
-		NBTTagCompound flags = new NBTTagCompound();
-		flags.setBoolean("activated", activated);
-		tagCompound.setTag("flags", flags);
+		tagCompound.setTag("flags", writeFlagsToNBT());
 		tagCompound.setTag("inventory", itemList);
+	}
+	
+	private void readFlagsFromNBT(NBTTagCompound compound) {
+		activated = compound.getBoolean("activated");
+	}
+	
+	private NBTTagCompound writeFlagsToNBT() {
+		NBTTagCompound nbt = new NBTTagCompound("flags");
+		nbt.setBoolean("activated", activated);
+		return nbt;
 	}
 
 	@Override
@@ -365,7 +377,13 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 	}
 	
 	public void setActivated(boolean b) {
+		NBTTagCompound nbt = writeFlagsToNBT();
+		PacketDispatcher.sendPacketToAllPlayers(new Packet132TileEntityData(xCoord, yCoord, zCoord, 0, nbt));
 		activated = b;
+	}
+	
+	public boolean isActivated() {
+		return activated;
 	}
 
 	@Override
@@ -376,4 +394,9 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 			setActivated(true);
 		}
 	}
+	
+	@Override
+    public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
+		readFlagsFromNBT(pkt.customParam1);
+    }
 }

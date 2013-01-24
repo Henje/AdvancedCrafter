@@ -11,14 +11,23 @@ import net.minecraft.inventory.Container;
 public class GuiAdvancedCrafter extends GuiContainer {
 	public final int xSizeOfTexture = 256;
 	public final int ySizeOfTexture = 256;
+	private ContainerCrafter cc;
 	
 	public GuiAdvancedCrafter(ContainerCrafter cc) {
 		super(cc);
+		this.cc = cc;
 	}
 	
 	@Override
     protected void drawGuiContainerForegroundLayer(int param1, int param2) {
-            fontRenderer.drawString("Advanced Autocrafter", 16, 6, 4210752);
+        fontRenderer.drawString("Advanced Autocrafter", 16, 6, 4210752);
+        String status;
+        if(cc.getCrafter().isActivated()) {
+        	status = "Activated";
+        } else {
+        	status = "Not Activated";
+        }
+        fontRenderer.drawString(status, 110, 50, 4210752);
     }
 
 	@Override
