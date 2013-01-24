@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Vector;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -43,36 +44,55 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 	
 	public ItemStack craftItemFromChests() {
 		ItemStack result = findRecipe();
-		TileEntity chest = searchChestSurrounding(worldObj, xCoord, yCoord, zCoord);
-		if(chest != null && removeFromChest((IInventory)chest,getIngredients())) {
+		Vector<IInventory> chests = searchChestsSurrounding(worldObj, xCoord, yCoord, zCoord);
+		if(!chests.isEmpty() && haveChestsEnoughIngredients(chests, getIngredients())) {
+			removeFromChests(chests, getIngredients());
 			return result;
 		} else {
 			return null;
 		}
 	}
 	
-	private boolean removeFromChest(IInventory chest,
-			HashMap<Integer, Integer> ingredients) {
-		HashMap<Integer,Integer> chestInv = getContent((IInventory)chest);
-		Iterator<Entry<Integer,Integer>> set = ingredients.entrySet().iterator();
-		while(set.hasNext()) {
-			Entry<Integer,Integer> entry = set.next();
-			if(!(chestInv.containsKey(entry.getKey()) && chestInv.get(entry.getKey()) >= entry.getValue())) {
-				return false;
-			}
-		}
-		set = ingredients.entrySet().iterator();
-		while(set.hasNext()) {
-			Entry<Integer,Integer> entry = set.next();
-			for(int i = 0; i < chest.getSizeInventory(); i++) {
-				if(chest.getStackInSlot(i) != null && chest.getStackInSlot(i).itemID == entry.getKey()) {
-					int toSubtract = Math.min(chest.getStackInSlot(i).stackSize, entry.getValue());
-					chest.decrStackSize(i, toSubtract);
-					entry.setValue(entry.getValue()-toSubtract);
+	private boolean haveChestsEnoughIngredients(Vector<IInventory> chests, HashMap<Integer,Integer> ingredients) {
+		Iterator<IInventory> it = chests.iterator();
+		while(it.hasNext()) {
+			IInventory inv = it.next();
+			for(int i = 0; i < inv.getSizeInventory(); i++) {
+				ItemStack stack = inv.getStackInSlot(i);
+				if(stack != null && ingredients.containsKey(stack.itemID)) {
+					int amount = ingredients.get(stack.itemID) - stack.stackSize;
+					ingredients.put(stack.itemID, amount);
+					if(amount < 1) {
+						ingredients.remove(stack.itemID);
+					}
 				}
 			}
 		}
-		return true;
+		return ingredients.isEmpty();
+	}
+	
+	private void removeFromChests(Vector<IInventory> chests,
+			HashMap<Integer, Integer> ingredients) {
+		HashMap<Integer,Integer> copy = (HashMap<Integer, Integer>) ingredients.clone();
+		Iterator<Entry<Integer,Integer>> ingreIt = copy.entrySet().iterator();
+		while(ingreIt.hasNext()) {
+			Entry<Integer,Integer> entry = ingreIt.next();
+			Iterator<IInventory> invIt = chests.iterator();
+			while(invIt.hasNext()) {
+				IInventory inv = invIt.next();
+				for(int i = 0; i < inv.getSizeInventory(); i++) {
+					ItemStack stack = inv.getStackInSlot(i);
+					if(stack != null && ingredients.containsKey(stack.itemID)) {
+						int amount = ingredients.get(stack.itemID) - stack.stackSize;
+						inv.decrStackSize(i, Math.min(ingredients.get(stack.itemID), stack.stackSize));
+						ingredients.put(stack.itemID, amount);
+						if(amount < 1) {
+							ingredients.remove(stack.itemID);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public HashMap<Integer,Integer> getIngredients() {
@@ -275,36 +295,55 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 		return (IPipeEntry) searchTileEntitySurrounding(world, x, y, z, IPipeEntry.class);
 	}
 	
-	private TileEntity searchChestSurrounding(World world, int x, int y, int z) {
+	private Vector<IInventory> searchChestsSurrounding(World world, int x, int y, int z) {
+		Vector<IInventory> sources = new Vector<IInventory>();
+		Vector<TileEntity> chests = searchTileEntitiesSurrounding(world, x, y, z, TileEntityChest.class);
+		Iterator<TileEntity> it = chests.iterator();
+		while(it.hasNext()) {
+			sources.add((IInventory) it.next());
+		}
 		try {
 			Class c = Class.forName("cpw.mods.ironchest.TileEntityIronChest");
-			TileEntity tile = searchTileEntitySurrounding(world, x, y, z, c);
-			if(tile != null) {
-				return tile;
-			} else {
-				return (TileEntityChest) searchTileEntitySurrounding(world, x, y, z, TileEntityChest.class);
+			Vector<TileEntity> ironChests = searchTileEntitiesSurrounding(world, x, y, z, c);
+			Iterator<TileEntity> itIron = chests.iterator();
+			while(itIron.hasNext()) {
+				sources.add((IInventory) itIron.next());
 			}
 		} catch (ClassNotFoundException e) {
-			return (TileEntityChest) searchTileEntitySurrounding(world, x, y, z, TileEntityChest.class);			
 		}
+		return sources;
 	}
 	
 	private TileEntity searchTileEntitySurrounding(World world, int x, int y, int z, Class c) {
-		if(c.isInstance(world.getBlockTileEntity(x+1, y, z))) {
-			return world.getBlockTileEntity(x+1, y, z);
-		} else if(c.isInstance(world.getBlockTileEntity(x-1, y, z))) {
-			return world.getBlockTileEntity(x-1, y, z);
-		} else if(c.isInstance(world.getBlockTileEntity(x, y+1, z))) {
-			return world.getBlockTileEntity(x, y+1, z);
-		} else if(c.isInstance(world.getBlockTileEntity(x, y-1, z))) {
-			return world.getBlockTileEntity(x, y-1, z);
-		} else if(c.isInstance(world.getBlockTileEntity(x, y, z+1))) {
-			return world.getBlockTileEntity(x, y, z+1);
-		} else if(c.isInstance(world.getBlockTileEntity(x, y, z-1))) {
-			return world.getBlockTileEntity(x, y, z-1);
-		} else {
+		Vector<TileEntity> pipes = searchTileEntitiesSurrounding(world, x, y, z, c);
+		if(pipes.isEmpty()) {
 			return null;
+		} else {
+			return pipes.get(0);
 		}
+	}
+	
+	private Vector<TileEntity> searchTileEntitiesSurrounding(World world, int x, int y, int z, Class c) {
+		Vector<TileEntity> tiles = new Vector<TileEntity>();
+		if(c.isInstance(world.getBlockTileEntity(x+1, y, z))) {
+			tiles.add(world.getBlockTileEntity(x+1, y, z));
+		}
+		if(c.isInstance(world.getBlockTileEntity(x-1, y, z))) {
+			tiles.add(world.getBlockTileEntity(x-1, y, z));
+		}
+		if(c.isInstance(world.getBlockTileEntity(x, y+1, z))) {
+			tiles.add(world.getBlockTileEntity(x, y+1, z));
+		}
+		if(c.isInstance(world.getBlockTileEntity(x, y-1, z))) {
+			tiles.add(world.getBlockTileEntity(x, y-1, z));
+		}
+		if(c.isInstance(world.getBlockTileEntity(x, y, z+1))) {
+			tiles.add(world.getBlockTileEntity(x, y, z+1));
+		}
+		if(c.isInstance(world.getBlockTileEntity(x, y, z-1))) {
+			tiles.add(world.getBlockTileEntity(x, y, z-1));
+		}
+		return tiles;
 	}
 	
 	private ForgeDirection computeDirection(TileEntity tile) {
