@@ -15,7 +15,6 @@ public class ActionProvider implements IActionProvider {
 		if(tile != null && tile instanceof TileEntityCrafter) {
 			LinkedList<IAction> list = new LinkedList<IAction>();
 			list.add(new ActionStopCrafter());
-			list.add(new ActionStartCrafter());
 			return list;
 		} else {
 			return new LinkedList<IAction>();

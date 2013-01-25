@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.PacketDispatcher;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -31,6 +32,7 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 	private int counter;
 	private ItemStack[] inventory;
 	private boolean activated;
+	private long lastUpdate;
 
 	public TileEntityCrafter() {
 		inventory = new ItemStack[9];
@@ -250,11 +252,13 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 	
 	private void readFlagsFromNBT(NBTTagCompound compound) {
 		activated = compound.getBoolean("activated");
+		lastUpdate = compound.getLong("lastUpdate");
 	}
 	
 	private NBTTagCompound writeFlagsToNBT() {
 		NBTTagCompound nbt = new NBTTagCompound("flags");
 		nbt.setBoolean("activated", activated);
+		nbt.setLong("lastUpdate", lastUpdate);
 		return nbt;
 	}
 
@@ -286,10 +290,11 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 	
 	@Override
 	public void updateEntity() {
-		if(activated) {
-			counter++;
-			if(counter == CRAFT_DELAY) {
-				counter = 0;
+		counter++;
+		if(counter == CRAFT_DELAY) {
+			checkAction();
+			counter = 0;
+			if(activated) {
 				craft();
 			}
 		}
@@ -377,21 +382,28 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 	}
 	
 	public void setActivated(boolean b) {
-		NBTTagCompound nbt = writeFlagsToNBT();
-		PacketDispatcher.sendPacketToAllPlayers(new Packet132TileEntityData(xCoord, yCoord, zCoord, 0, nbt));
+		if(FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+			NBTTagCompound nbt = writeFlagsToNBT();
+			PacketDispatcher.sendPacketToAllPlayers(new Packet132TileEntityData(xCoord, yCoord, zCoord, 0, nbt));
+		}
 		activated = b;
 	}
 	
 	public boolean isActivated() {
 		return activated;
 	}
+	
+	private void checkAction() {
+		if(!activated && System.currentTimeMillis() - lastUpdate > 1000) {
+			setActivated(true);
+		}
+	}
 
 	@Override
 	public void actionActivated(IAction action) {
+		lastUpdate = System.currentTimeMillis();
 		if(action.getId() == 1010) {
 			setActivated(false);
-		} else if(action.getId() == 1011) {
-			setActivated(true);
 		}
 	}
 	

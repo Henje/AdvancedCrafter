@@ -22,12 +22,15 @@ public class GuiAdvancedCrafter extends GuiContainer {
     protected void drawGuiContainerForegroundLayer(int param1, int param2) {
         fontRenderer.drawString("Advanced Autocrafter", 16, 6, 4210752);
         String status;
+        int color;
         if(cc.getCrafter().isActivated()) {
         	status = "Activated";
+        	color = 0x44ff55;
         } else {
         	status = "Not Activated";
+        	color = 0xff4455;
         }
-        fontRenderer.drawString(status, 110, 50, 4210752);
+        fontRenderer.drawString(status, 100, 70, color);
     }
 
 	@Override
