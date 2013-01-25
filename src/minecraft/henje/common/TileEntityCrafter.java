@@ -23,11 +23,12 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.ISidedInventory;
 import buildcraft.api.gates.IAction;
 import buildcraft.api.gates.IActionReceptor;
 import buildcraft.api.transport.IPipeEntry;
 
-public class TileEntityCrafter extends TileEntity implements IInventory, IActionReceptor {
+public class TileEntityCrafter extends TileEntity implements ISidedInventory, IActionReceptor {
 	private final static int CRAFT_DELAY = 20;
 	private int counter;
 	private ItemStack[] inventory;
@@ -322,7 +323,7 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
 		try {
 			Class c = Class.forName("cpw.mods.ironchest.TileEntityIronChest");
 			Vector<TileEntity> ironChests = searchTileEntitiesSurrounding(world, x, y, z, c);
-			Iterator<TileEntity> itIron = chests.iterator();
+			Iterator<TileEntity> itIron = ironChests.iterator();
 			while(itIron.hasNext()) {
 				sources.add((IInventory) itIron.next());
 			}
@@ -411,4 +412,14 @@ public class TileEntityCrafter extends TileEntity implements IInventory, IAction
     public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		readFlagsFromNBT(pkt.customParam1);
     }
+
+	@Override
+	public int getStartInventorySide(ForgeDirection side) {
+		return 0;
+	}
+
+	@Override
+	public int getSizeInventorySide(ForgeDirection side) {
+		return 0;
+	}
 }
