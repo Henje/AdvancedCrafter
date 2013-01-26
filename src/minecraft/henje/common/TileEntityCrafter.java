@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.PacketDispatcher;
+import cpw.mods.fml.relauncher.Side;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -291,12 +292,14 @@ public class TileEntityCrafter extends TileEntity implements ISidedInventory, IA
 	
 	@Override
 	public void updateEntity() {
-		counter++;
-		if(counter == CRAFT_DELAY) {
-			checkAction();
-			counter = 0;
-			if(activated) {
-				craft();
+		if(FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
+			counter++;
+			if(counter == CRAFT_DELAY) {
+				checkAction();
+				counter = 0;
+				if(activated) {
+					craft();
+				}
 			}
 		}
 	}
@@ -383,11 +386,13 @@ public class TileEntityCrafter extends TileEntity implements ISidedInventory, IA
 	}
 	
 	public void setActivated(boolean b) {
-		if(FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-			NBTTagCompound nbt = writeFlagsToNBT();
-			PacketDispatcher.sendPacketToAllPlayers(new Packet132TileEntityData(xCoord, yCoord, zCoord, 0, nbt));
+		if(activated != b) {
+			if(FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+				NBTTagCompound nbt = writeFlagsToNBT();
+				PacketDispatcher.sendPacketToAllPlayers(new Packet132TileEntityData(xCoord, yCoord, zCoord, 0, nbt));
+			}
+			activated = b;
 		}
-		activated = b;
 	}
 	
 	public boolean isActivated() {
